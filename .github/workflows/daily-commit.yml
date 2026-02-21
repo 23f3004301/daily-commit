@@ -2,28 +2,30 @@ name: Daily Commit Workflow
 
 on:
   schedule:
-    - cron: '30 2 * * *'   # Runs daily at 2:30 AM UTC
-  workflow_dispatch:         # Allows manual trigger for testing
+    - cron: '30 2 * * *'
+  workflow_dispatch:
+
+# ✅ THIS IS THE KEY FIX — give write permission
+permissions:
+  contents: write
 
 jobs:
   daily-commit:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          persist-credentials: true    # ✅ keeps token for push
 
-      # Step 2: Update timestamp file (creates the commit content)
       - name: Update timestamp for 23f3004301@ds.study.iitm.ac.in
         run: |
           echo "Last updated: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" > last_updated.txt
           echo "Run number: ${{ github.run_number }}" >> last_updated.txt
           echo "Triggered by: ${{ github.event_name }}" >> last_updated.txt
 
-      # Step 3: Commit and push
       - name: Commit and push changes
         run: |
           git config --global user.email "23f3004301@ds.study.iitm.ac.in"
